@@ -1,0 +1,2 @@
+﻿model,batch_size,lr,epoch,accu,val_accu
+ResNet50,8,0.1,1,0.5,0.5
