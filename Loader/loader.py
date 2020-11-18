@@ -36,10 +36,13 @@ class dataloader(Dataset):
         print("\n加载数据:\n")
         for i,_ in enumerate(tbar):
             if self.transform:
-                image_name=join(path,"Images",file["image_name"][i]+'.jpeg')
-                self.image_name.append(file["image_name"][i])
-                self.image.append(self.transform(Image.open(image_name)))
-                self.label.append(torch.tensor(self.classfiar.index(file["target"][i])))
+                try:
+                    image_name=join(path,"Images",file["image_name"][i]+'.jpeg')
+                    self.image_name.append(file["image_name"][i])
+                    self.image.append(self.transform(Image.open(image_name)))
+                    self.label.append(torch.tensor(self.classfiar.index(file["target"][i])))
+                except:
+                    pass
     def __len__(self):
         return len(self.image)
     def __getitem__(self, item):
