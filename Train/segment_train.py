@@ -25,8 +25,8 @@ class Process:
         self.crop_size=crop_size
         self.net=FCNs(pretrained_net=VGGNet(pretrained=pretrained),n_class=self.num_class)
         self.net=self.net.to(self.device)
-        #self.transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])])
-        self.transform = transforms.Compose([transforms.ToTensor()])
+        self.transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])])
+        #self.transform = transforms.Compose([transforms.ToTensor()])
         train_set=dataloader(path='./Data',dataset='./Loader/segment_train',transform=self.transform,crop_size=self.crop_size)
         val_set=dataloader(path='./Data',dataset='./Loader/segment_val',transform=self.transform,crop_size=self.crop_size)
         print("\n训练集数目:%d\t验证集数目:%d\n"%(len(train_set),len(val_set)))
