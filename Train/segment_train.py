@@ -10,6 +10,7 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 from tqdm import tqdm
 from datetime import datetime
+from os.path import join
 
 
 class Process:
@@ -42,6 +43,7 @@ class Process:
         if not os.path.isdir(path):
             os.mkdir(path)
     def train(self,epoch):
+        max_iou = 0
         for j in range(epoch):
             running_loss=0
             prev_time = datetime.now()
@@ -72,6 +74,19 @@ class Process:
             m, s = divmod(remainder, 60)
             time_str = 'Time: {:.0f}:{:.0f}:{:.0f}'.format(h, m, s)
             print('\n'+epoch_str + time_str + ' lr: {}'.format(self.lr)+'\n')
+
+            # 保存所有的model,并且挑出最好的
+            model_name = 'Vgg' + '_' + str(j) + '_' + str(int(acc_temp * 100)) + '.pth'
+            path = './Weights'
+            if not os.path.isdir(path):
+                os.mkdir(path)
+            # torch.save(self.net.state_dict(),join(path,model_name))
+            if iou_mean > max_iou:
+                max_iou = iou_mean
+                self.best_model = 'best_' + model_name
+                torch.save(self.net.state_dict(), join(path, self.best_model))
+            # 更新学习率：
+            self.scheduler.step()
     def validate(self):
         pass
 if __name__=="__main__":
