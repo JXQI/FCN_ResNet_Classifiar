@@ -16,6 +16,7 @@ def Accuracy(net,dataloader,loss_function,device,crop_size):
             net=net.to(device)
             outputs=net(inputs)
             _,predicted=torch.max(outputs,1)
+            #print(predicted)
             iou+=iou_mean(predicted,labels)
             total+=labels.size(0)
             correct+=(predicted==labels).sum().item()
@@ -34,7 +35,7 @@ def iou_mean(pred,target,n_classes=1):
     iousSum = 0
     #pred = torch.from_numpy(pred)
     pred = pred.view(-1)
-    target = np.array(target)
+    #target = np.array(target)
     #target = torch.from_numpy(target)
     target = target.view(-1)
 
