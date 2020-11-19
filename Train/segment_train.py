@@ -56,8 +56,8 @@ class Process:
                 if i%10==9:
                     print("[%d, %d] loss:%f"%(j+1,i+1,running_loss/10))
                     running_loss=0
-            loss_temp, acc_temp, loss_per, _, _, _, _ = Accuracy(self.net, self.train_loader, self.loss, self.device,crop_size=(160,160))
-            print("%d epoch the loss is %f,the train_accuarcy is %f" % (j + 1, loss_temp, acc_temp))
+            loss_temp, acc_temp, loss_per,iou_mean = Accuracy(self.net, self.train_loader, self.loss, self.device,crop_size=(160,160))
+            print("%d epoch the loss is %f,the train_accuarcy is %f,the iou_mean is %f" % (j + 1, loss_temp, acc_temp,iou_mean))
     def validate(self):
         pass
 if __name__=="__main__":

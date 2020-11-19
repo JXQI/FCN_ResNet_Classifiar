@@ -13,7 +13,7 @@ import random
 from matplotlib import pyplot as plt
 import numpy as np
 
-class_map=[255,0]   #对应的索引为其类别，1/0代表背景，0/255代表病变区域
+class_map=[0,255]   #对应的索引为其类别，0代表背景，1代表病变区域
 '''
 Function: label转化为类别信息
 Args: Image.open()的label
