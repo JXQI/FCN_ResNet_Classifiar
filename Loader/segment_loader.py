@@ -25,6 +25,17 @@ def image2label(label):
         for j in range(label.shape[1]):
             label_class[i][j]=class_map.index(label[i][j])
     return label_class
+'''
+Function: predict转化为图像信息
+Args: predict的tensor
+'''
+def label2image(predict):
+    predict=predict.cpu()
+    predict=np.array(predict)
+    for i in range(predict.shape[0]):
+        for j in range(predict.shape[1]):
+            predict[i][j]=class_map[predict[i][j]]
+    return predict
 
 '''
 Function: 随机裁剪图像
@@ -127,12 +138,10 @@ if __name__=='__main__':
     print(image.shape)
     print(label.shape)
     print(name)
-    ##测试各个函数的功能
+    # ##测试各个函数的功能
     # image=join("../Data/Images",name+".jpeg")
     # label=join("../Data/data",name+"_expert.png")
     # show(image,label)
     # image,label=random_crop(data=Image.open(image),label=Image.open(label),crop_size=(500,500))
     # show(image,label,Is_open=True)
-    # print(np.array(label))
     # label_class=image2label(label)
-    # print(label_class)

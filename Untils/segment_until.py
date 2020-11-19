@@ -1,6 +1,26 @@
 import torch
 import torch.nn.functional as F
 import numpy as np
+from Loader.segment_loader import label2image
+from matplotlib import pyplot as plt
+from PIL import Image
+from os.path import join
+
+#显示预测的图像
+def show(image,label,predict):
+    label=label2image(label)
+    predict=label2image(predict)
+    image=np.array(image).transpose((1,2,0))
+    plt.subplot(1,3,1)
+    plt.title("image")
+    plt.imshow(image)   #TODO:这里输出是(3,160,160),需要的是(160,160)
+    plt.subplot(1,3,2)
+    plt.title("label")
+    plt.imshow(label,cmap='gray')
+    plt.subplot(1,3,3)
+    plt.title("predict")
+    plt.imshow(predict,cmap='gray')
+    plt.show()
 
 def Accuracy(net,dataloader,loss_function,device,crop_size):
     loss_get=0
@@ -17,6 +37,9 @@ def Accuracy(net,dataloader,loss_function,device,crop_size):
             outputs=net(inputs)
             _,predicted=torch.max(outputs,1)
             #print(predicted)
+            #debug 显示预测的图像和label
+            #show(inputs[0],labels[0],predicted[0])
+            ################
             iou+=iou_mean(predicted,labels)
             total+=labels.size(0)
             correct+=(predicted==labels).sum().item()
