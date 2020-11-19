@@ -10,6 +10,19 @@ import pandas as pd
 import random
 
 '''
+Function: 修改mask图像的名称，使其统一方便读取
+Args: mask图像路径
+Return: ISIC_0000000_expert.png 格式的名称
+'''
+def rename_mask(path):
+    for files in os.walk(path):
+        for i in files[2]:
+            temp=i.split('_')
+            if temp[2]!='expert.png':
+                temp[2]='expert.png'
+                os.rename(join(path,i),join(path,"_".join(temp)))
+
+'''
 Funtion: 读取json文件，获取文件名和标签
 Args:
     path:数据集所在的路径
@@ -82,14 +95,18 @@ def dataset(image_list,des_path='./',shuffle=True,ratio=0.8):
     print("训练集数目%d,验证集数目%d"%(len(train["image_name"]),len(val['image_name'])))
 
 if __name__=='__main__':
-    ##统计数据集，并且生成image_list.csv
+    # 修改mask文件名
     path='../Data/data'
-    Source(path,despath='.')
+    rename_mask(path)
 
-    # #查看数据集的大小
-    file='./segment_list.csv'
-    Source_Length(file)
-
-    #划分测试集和验证集
-    file = './segment_list.csv'
-    dataset(file)
+    # ##统计数据集，并且生成image_list.csv
+    # path='../Data/data'
+    # Source(path,despath='.')
+    #
+    # # #查看数据集的大小
+    # file='./segment_list.csv'
+    # Source_Length(file)
+    #
+    # #划分测试集和验证集
+    # file = './segment_list.csv'
+    # dataset(file)
