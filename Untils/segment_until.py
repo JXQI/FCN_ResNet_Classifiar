@@ -1,13 +1,14 @@
 import torch
 import torch.nn.functional as F
 
-def Accuracy(net,dataloader,loss_function,device):
+def Accuracy(net,dataloader,loss_function,device,crop_size):
     loss_get=0
     loss=[]
     total=0
     correct=0
     net.eval()
     name,label,target,predict=[],[],[],[]
+    number_pixes=crop_size[0]*crop_size[1]
     with torch.no_grad():
         for i,data in enumerate(dataloader,0):
             inputs,labels,image_name=data[0].to(device),data[1].to(device),data[2]
@@ -17,9 +18,9 @@ def Accuracy(net,dataloader,loss_function,device):
             #将label和概率添加进列表中去
             for lp in range(len(labels)):
                 name.append(image_name[lp])
-                label.append(labels[lp])
-                target.append(F.softmax(outputs[lp], dim=0)[predicted[lp]])
-                predict.append(predicted[lp])
+                #label.append(labels[lp])
+                #target.append(F.softmax(outputs[lp], dim=0)[predicted[lp]])
+                #predict.append(predicted[lp])
 
             # print(predicted,labels)
             total+=labels.size(0)
@@ -28,7 +29,7 @@ def Accuracy(net,dataloader,loss_function,device):
             temp=loss_function(outputs,labels)
             loss.append(temp)
             loss_get+=temp
-        return loss_get/total,correct/total,loss,name,label,target,predict
+        return loss_get/total,correct/(total*number_pixes),loss,name,label,target,predict
 '''
 计算IOU
 '''
