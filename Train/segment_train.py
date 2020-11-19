@@ -1,6 +1,6 @@
 from Models.fcn import VGGNet,FCNs
 from Loader.segment_loader import dataloader
-from Untils.segment_until import Accuracy
+from Untils.segment_until import Accuracy,iou_mean
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -49,6 +49,7 @@ class Process:
             prev_time = datetime.now()
             self.net.train()
             tbar=tqdm(self.train_loader)
+            correct,all_loss,iou,total=0,0,0,0
             for i,data in enumerate(tbar,0):
                 self.optim.zero_grad()
                 inputs,labels=data[0].to(self.device),data[1].to(self.device)
@@ -58,16 +59,23 @@ class Process:
                 loss=self.loss(output,labels)
                 loss.backward() #计算梯度，反向传播
                 self.optim.step()
+                #计算准确率
+                total+=1
+                _, predicted = torch.max(output, 1)
+                correct += (predicted == labels).sum().item()
+                all_loss+=loss
+                iou += iou_mean(predicted, labels)
+                ######
                 running_loss+=loss
                 if i%10==9:
                     print("[%d, %d] loss:%f"%(j+1,i+1,running_loss/10))
                     running_loss=0
             #验证准确率
             self.net.eval()
-            loss_temp, acc_temp, loss_per,iou_mean = Accuracy(self.net, self.train_loader, self.loss, self.device,crop_size=self.crop_size)
+            #loss_temp, acc_temp, loss_per,iou_mean = Accuracy(self.net, self.train_loader, self.loss, self.device,crop_size=self.crop_size)
             val_loss_temp, val_acc_temp, val_loss_per, val_iou_mean = Accuracy(self.net, self.val_loader, self.loss, self.device,crop_size=self.crop_size)
             epoch_str = ('Epoch: {}, Train Loss: {:.5f}, Train Acc: {:.5f}, Train Mean IU: {:.5f},Valid Loss: {:.5f}, Valid Acc: {:.5f}, Valid Mean IU: {:.5f} '.format\
-                             (j+1, loss_temp, acc_temp,iou_mean ,val_loss_temp, val_acc_temp, val_iou_mean))
+                             (j+1, all_loss/total, correct/total,iou/total ,val_loss_temp, val_acc_temp, val_iou_mean))
             # 计算时间
             cur_time = datetime.now()
             h, remainder = divmod((cur_time - prev_time).seconds, 3600)
