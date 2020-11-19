@@ -35,18 +35,17 @@ class dataloader(Dataset):
         tbar=tqdm(file["image_name"])
         print("\n加载数据:\n")
         for i,_ in enumerate(tbar):
-            if self.transform:
-                try:
-                    image_name=join(path,"Images",file["image_name"][i]+'.jpeg')
-                    self.image_name.append(file["image_name"][i])
-                    self.image.append(self.transform(Image.open(image_name)))
-                    self.label.append(torch.tensor(self.classfiar.index(file["target"][i])))
-                except:
-                    pass
+            try:
+                image_name=join(path,"Images",file["image_name"][i]+'.jpeg')
+                self.image_name.append(file["image_name"][i])
+                self.image.append(Image.open(image_name))
+                self.label.append(self.classfiar.index(file["target"][i]))
+            except:
+                pass
     def __len__(self):
         return len(self.image)
     def __getitem__(self, item):
-        return self.image[item],self.label[item],self.image_name[item]
+        return self.transform(self.image[item]),torch.tensor(self.label[item]),self.image_name[item]
 
 if __name__=='__main__':
     dataset=dataloader("../Data",dataset='train',transform=transforms.Compose([transforms.ToTensor()]))
