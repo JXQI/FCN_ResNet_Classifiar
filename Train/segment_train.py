@@ -9,22 +9,25 @@ import torchvision.transforms as transforms
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 from tqdm import tqdm
+from datetime import datetime
 
 
 class Process:
     def __init__(self,device,num_worker=0,batch_size=4,lr=0.1,num_class=2,net='ResNet50',\
-                 pretrained=False):
+                 pretrained=False,crop_size=(160,160)):
         self.device = device
         self.batch_size=batch_size
         self.num_worker=num_worker
         self.lr=lr
         self.num_class=num_class
         self.netname=net
-        self.net=FCNs(pretrained_net=VGGNet(pretrained=True),n_class=self.num_class)
+        self.crop_size=crop_size
+        self.net=FCNs(pretrained_net=VGGNet(pretrained=pretrained),n_class=self.num_class)
         self.net=self.net.to(self.device)
-        self.transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])])
-        train_set=dataloader(path='../Data',dataset='../Loader/segment_train',transform=self.transform,crop_size=(160,160))
-        val_set=dataloader(path='../Data',dataset='../Loader/segment_val',transform=self.transform,crop_size=(160,160))
+        #self.transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])])
+        self.transform = transforms.Compose([transforms.ToTensor()])
+        train_set=dataloader(path='./Data',dataset='./Loader/segment_train',transform=self.transform,crop_size=self.crop_size)
+        val_set=dataloader(path='./Data',dataset='./Loader/segment_val',transform=self.transform,crop_size=self.crop_size)
         print("\n训练集数目:%d\t验证集数目:%d\n"%(len(train_set),len(val_set)))
         self.train_loader=DataLoader(dataset=train_set,batch_size=self.batch_size,shuffle=True,num_workers=self.num_worker)
         self.val_loader = DataLoader(dataset=val_set, batch_size=self.batch_size, shuffle=True, num_workers=self.num_worker)
@@ -41,6 +44,7 @@ class Process:
     def train(self,epoch):
         for j in range(epoch):
             running_loss=0
+            prev_time = datetime.now()
             self.net.train()
             tbar=tqdm(self.train_loader)
             for i,data in enumerate(tbar,0):
@@ -56,8 +60,18 @@ class Process:
                 if i%10==9:
                     print("[%d, %d] loss:%f"%(j+1,i+1,running_loss/10))
                     running_loss=0
-            loss_temp, acc_temp, loss_per,iou_mean = Accuracy(self.net, self.train_loader, self.loss, self.device,crop_size=(160,160))
-            print("%d epoch the loss is %f,the train_accuarcy is %f,the iou_mean is %f" % (j + 1, loss_temp, acc_temp,iou_mean))
+            #验证准确率
+            self.net.eval()
+            loss_temp, acc_temp, loss_per,iou_mean = Accuracy(self.net, self.train_loader, self.loss, self.device,crop_size=self.crop_size)
+            val_loss_temp, val_acc_temp, val_loss_per, val_iou_mean = Accuracy(self.net, self.val_loader, self.loss, self.device,crop_size=self.crop_size)
+            epoch_str = ('Epoch: {}, Train Loss: {:.5f}, Train Acc: {:.5f}, Train Mean IU: {:.5f},Valid Loss: {:.5f}, Valid Acc: {:.5f}, Valid Mean IU: {:.5f} '.format\
+                             (j+1, loss_temp, acc_temp,iou_mean ,val_loss_temp, val_acc_temp, val_iou_mean))
+            # 计算时间
+            cur_time = datetime.now()
+            h, remainder = divmod((cur_time - prev_time).seconds, 3600)
+            m, s = divmod(remainder, 60)
+            time_str = 'Time: {:.0f}:{:.0f}:{:.0f}'.format(h, m, s)
+            print('\n'+epoch_str + time_str + ' lr: {}'.format(self.lr)+'\n')
     def validate(self):
         pass
 if __name__=="__main__":
@@ -67,5 +81,5 @@ if __name__=="__main__":
     # pro.train(epoch=2)
     # pro.validate()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    pro = Process(device,batch_size=8)
+    pro = Process(device,batch_size=8,crop_size=(480,480))
     pro.train(epoch=1)
