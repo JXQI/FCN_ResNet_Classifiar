@@ -84,13 +84,13 @@ class Process:
             print('\n'+epoch_str + time_str + ' lr: {}'.format(self.lr)+'\n')
 
             # 保存所有的model,并且挑出最好的
-            model_name = 'Vgg' + '_' + str(j) + '_' + str(int(acc_temp * 100)) + '.pth'
+            model_name = 'Vgg' + '_' + str(j) + '_' + str(int(correct/total * 100)) + '.pth'
             path = './Weights'
             if not os.path.isdir(path):
                 os.mkdir(path)
             # torch.save(self.net.state_dict(),join(path,model_name))
-            if iou_mean > max_iou:
-                max_iou = iou_mean
+            if iou > max_iou:
+                max_iou = iou
                 self.best_model = 'best_' + model_name
                 torch.save(self.net.state_dict(), join(path, self.best_model))
             # 更新学习率：
